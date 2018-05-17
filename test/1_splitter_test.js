@@ -1,6 +1,7 @@
 const Splitter = artifacts.require("./Splitter.sol")
 
 import expectThrow from "zeppelin-solidity/test/helpers/expectThrow"
+import {BigNumber} from 'bignumber.js';
 
 contract("Splitter", (accounts) => {
   let instance
@@ -55,7 +56,7 @@ contract("Splitter", (accounts) => {
          tx = await instance.send(web3.toWei(1, "ether"))
          assert.equal(tx.logs[0].event, "Deposit")
          assert.equal(tx.logs[0].args.amount, web3.toWei(1, "ether"))
-         assert.equal(tx.logs[0].args.deposit, web3.toWei(1, "ether") * 2.0)
+         assert.equal(tx.logs[0].args.deposit, web3.toWei(1 * 2.0, "ether") )
          assert.equal(tx.logs[0].args.from, accounts[0])
        })
   })
@@ -112,6 +113,7 @@ contract("Splitter", (accounts) => {
 
     beforeEach("deploy a new Splitter contract", async () => {
       instance = await Splitter.new()
+
       const tx1 = await instance.registerDestinationAddr('Carol', {from: accounts[1]})
       const tx2 = await instance.registerDestinationAddr('Bob', {from: accounts[2]})
 
@@ -155,6 +157,33 @@ contract("Splitter", (accounts) => {
          assert.equal(tx.logs[0].args.fundsWithdrawn, web3.toWei(.5, "ether"))
          assert.equal(tx.logs[0].args.to, accounts[1])
        })
+    it("should withdrawal deposit withdrawl",
+       async () => {
+         //withdrawal
+         var tx = await instance.withdraw(web3.toWei(.5, "ether"), {from: accounts[1]})
+
+         assert.equal(tx.logs[0].event, "Withdrawal")
+         assert.equal(tx.logs[0].args.amountWithdrew, web3.toWei(.5, "ether"))
+         assert.equal(tx.logs[0].args.fundsWithdrawn, web3.toWei(.5, "ether"))
+         assert.equal(tx.logs[0].args.to, accounts[1])
+
+         await expectThrow(
+            instance.withdraw(1, {from: accounts[1]})
+         )
+         //deposit
+         await instance.send(web3.toWei(1, "ether"))
+
+         //withdrawal
+         tx = await instance.withdraw(web3.toWei(.5, "ether"), {from: accounts[1]})
+
+         assert.equal(tx.logs[0].event, "Withdrawal")
+         assert.equal(tx.logs[0].args.amountWithdrew, web3.toWei(.5, "ether"))
+         assert.equal(tx.logs[0].args.fundsWithdrawn, web3.toWei(1, "ether"))
+         assert.equal(tx.logs[0].args.to, accounts[1])
+         await expectThrow(
+            instance.withdraw(1, {from: accounts[1]})
+         )
+       })
     it("should allow both parties to make withdrawals",
        async () => {
          var tx = await instance.withdraw(web3.toWei(.5, "ether"), {from: accounts[1]})
@@ -175,8 +204,9 @@ contract("Splitter", (accounts) => {
     it("should not allow excessive withdrawal",
        async () => {
 
+         const overdraw = new BigNumber(web3.toWei(.5, "ether")).plus(1)
          await expectThrow(
-            instance.withdraw(web3.toWei(.50, "ether") + 1, {from: accounts[1]})
+            instance.withdraw(overdraw.toString(), {from: accounts[1]})
          )
 
          var tx = await instance.withdraw(web3.toWei(.5, "ether"), {from: accounts[1]})
@@ -189,6 +219,28 @@ contract("Splitter", (accounts) => {
          await expectThrow(
             instance.withdraw(1, {from: accounts[1]})
          )
+       })
+
+    it("should allow odd amount withdrawal",
+       async () => {
+
+         var tx = await instance.send(1)
+
+         assert.equal(tx.logs[0].event, "Deposit")
+         assert.equal(tx.logs[0].args.amount, 1)
+         let expectedBalance = new BigNumber(web3.toWei(1, "ether")).plus(1);
+         assert.equal(tx.logs[0].args.deposit.toString(), expectedBalance)
+         assert.equal(tx.logs[0].args.from, accounts[0])
+
+         tx = await instance.withdraw(web3.toWei(.5, "ether"), {from: accounts[1]})
+
+         await expectThrow(
+            instance.withdraw(1, {from: accounts[1]})
+         )
+         // assert.equal(tx.logs[0].event, "Withdrawal")
+         // assert.equal(tx.logs[0].args.amountWithdrew, 1)
+         // assert.equal(tx.logs[0].args.fundsWithdrawn, 1)
+         // assert.equal(tx.logs[0].args.to, accounts[1])
        })
 
   })
