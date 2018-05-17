@@ -25,23 +25,24 @@ TODO: team up with different people impersonating Alice, Bob and Carol, all coop
 
 contract Splitter is Ownable {
     using SafeMath for uint;
-    // all destination Addresses
-    // addresses => User  mapping
+
+    //TODO: considering packing with fixed len string
     struct User {
         bool exists;
         string name;
         uint256 fundsWithdrawn;
     }
 
-    mapping(address => User) private  destinationAddrs;
-
+    // all destination Addresses
+    // addresses => User  mapping
+    mapping(address => User) public  destinationAddrs;
     uint public numDestinationAddrs;
     uint public constant QUOTA = 2;
     uint256 public deposit = 0;
     /* Events */
     event RegisterDestinationAddr(address indexed to, string name);
-    event Deposit(address indexed _fromAddress, uint256 amount, uint256 deposit);
-    event Withdrawal(address indexed _toAddress, uint256 amountWithdrew, uint256 fundsWithdrawn);
+    event Deposit(address indexed from, uint256 amount, uint256 deposit);
+    event Withdrawal(address indexed to, uint256 amountWithdrew, uint256 fundsWithdrawn);
 
     /* Constructor */
     constructor() public { deposit = 0;}
@@ -53,7 +54,6 @@ contract Splitter is Ownable {
     {
         require(QUOTA == numDestinationAddrs);
         deposit += msg.value;
-
         emit Deposit(msg.sender, msg.value, deposit);
     }
 
@@ -81,11 +81,7 @@ contract Splitter is Ownable {
             fundsWithdrawn: 0
             });
         // name cannot be zero once mapped
-        // sol string compare hack
-        // consider using stringUtils
         require(destinationAddrs[msg.sender].exists);
-
-
         numDestinationAddrs++;
         emit RegisterDestinationAddr(msg.sender, _name);
         return true;
@@ -97,7 +93,6 @@ contract Splitter is Ownable {
     @return success Boolean
     */
     function withdraw(uint256 _amount)
-        //!onlyOwner
         public
         returns (bool)
      {
