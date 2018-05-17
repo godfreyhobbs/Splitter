@@ -4,11 +4,14 @@
   "description": "simple smart contract that split funds between two destination accounts",
   "main": "index.js",
   "scripts": {
-    "start": "npm run start:testrpc",
+    "start": "react-scripts start",
     "start:testrpc": "ganache-cli -p 7545 -i 5777",
     "migrate": "truffle migrate",
-    "test": "truffle test",
-    "lint:sol": "solium -d ."
+    "test:truffle": "truffle test",
+    "lint:sol": "solium -d .",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject"
   },
   "keywords": [
     "ethereum",
@@ -23,6 +26,10 @@
     "truffle": "^4.1.8"
   },
   "dependencies": {
-    "zeppelin-solidity": "^1.9.0"
+    "zeppelin-solidity": "^1.9.0",
+    "react": "^16.3.2",
+    "react-dom": "^16.3.2",
+    "react-scripts": "1.1.4",
+    "truffle-contract": "^3.0.5"
   }
 }
