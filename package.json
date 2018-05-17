@@ -4,8 +4,11 @@
   "description": "simple smart contract that split funds between two destination accounts",
   "main": "index.js",
   "scripts": {
-    "lint:sol": "solium -d .",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "npm run start:testrpc",
+    "start:testrpc": "ganache-cli -p 7545 -i 5777",
+    "migrate": "truffle migrate",
+    "test": "truffle test",
+    "lint:sol": "solium -d ."
   },
   "keywords": [
     "ethereum",
@@ -14,8 +17,12 @@
   ],
   "author": "godfreyhobbs",
   "license": "GPL-3.0",
+  "devDependencies": {
+    "babel-polyfill": "^6.26.0",
+    "ganache-cli": "^6.1.0",
+    "truffle": "^4.1.8"
+  },
   "dependencies": {
-    "solium": "^1.1.7",
     "zeppelin-solidity": "^1.9.0"
   }
 }

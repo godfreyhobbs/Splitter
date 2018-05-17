@@ -1,5 +1,5 @@
 {
-  "extends": "solium:recommended",
+  "extends": "solium:all",
   "plugins": [
     "security"
   ],
@@ -9,8 +9,20 @@
       "double"
     ],
     "indentation": [
-      "error",
+      "warning",
       4
+    ],
+    "arg-overflow": [
+      "off"
+    ],
+    "security/enforce-explicit-visibility": [
+      "error"
+    ],
+    "security/no-block-members": [
+      "warning"
+    ],
+    "security/no-inline-assembly": [
+      "warning"
     ]
   }
 }

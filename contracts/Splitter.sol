@@ -22,21 +22,22 @@ TODO: used payable default function
 TODO: team up with different people impersonating Alice, Bob and Carol, all cooperating on a test net.
 */
 
+
 contract Splitter is Ownable {
     using SafeMath for uint;
     // all destination Addresses
     // addresses => User  mapping
     struct User {
-            bool exists;
-            string name;
-            uint256 fundsWithdrawn;
+        bool exists;
+        string name;
+        uint256 fundsWithdrawn;
     }
 
     mapping(address => User) private  destinationAddrs;
 
-    uint private numDestinationAddrs;
-    uint private constant QUOTA = 2;
-    uint256 private deposit = 0;
+    uint public numDestinationAddrs;
+    uint public constant QUOTA = 2;
+    uint256 public deposit = 0;
     /* Events */
     event RegisterDestinationAddr(address indexed _from, string name);
     event Deposit(address indexed _fromAddress, uint256 amount, uint256 deposit);
@@ -75,10 +76,10 @@ contract Splitter is Ownable {
 
         //Allow update without error
         destinationAddrs[msg.sender] = User({
-                                      exists: true,
-                                      name: _name,
-                                      fundsWithdrawn: 0
-                                      });
+            exists: true,
+            name: _name,
+            fundsWithdrawn: 0
+            });
         // name cannot be zero once mapped
         // sol string compare hack
         // consider using stringUtils
@@ -100,12 +101,12 @@ contract Splitter is Ownable {
         public
         returns (bool)
      {
-      require(destinationAddrs[msg.sender].exists);
-      // invariant is that a destination addr can never withdraw more than 1/2 of the deposit
-      require(destinationAddrs[msg.sender].fundsWithdrawn + _amount <=  (deposit/QUOTA));
-      destinationAddrs[msg.sender].fundsWithdrawn += _amount;
-      msg.sender.transfer(_amount);
-      emit Withdrawal(msg.sender, _amount, destinationAddrs[msg.sender].fundsWithdrawn);
-      return true;
+        require(destinationAddrs[msg.sender].exists);
+        // invariant is that a destination addr can never withdraw more than 1/2 of the deposit
+        require(destinationAddrs[msg.sender].fundsWithdrawn + _amount <= (deposit/QUOTA));
+        destinationAddrs[msg.sender].fundsWithdrawn += _amount;
+        msg.sender.transfer(_amount);
+        emit Withdrawal(msg.sender, _amount, destinationAddrs[msg.sender].fundsWithdrawn);
+        return true;
     }
 }
