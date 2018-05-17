@@ -39,7 +39,7 @@ contract Splitter is Ownable {
     uint public constant QUOTA = 2;
     uint256 public deposit = 0;
     /* Events */
-    event RegisterDestinationAddr(address indexed _from, string name);
+    event RegisterDestinationAddr(address indexed to, string name);
     event Deposit(address indexed _fromAddress, uint256 amount, uint256 deposit);
     event Withdrawal(address indexed _toAddress, uint256 amountWithdrew, uint256 fundsWithdrawn);
 
@@ -73,7 +73,7 @@ contract Splitter is Ownable {
         // sol string compare hack
         // consider using stringUtils
         require(keccak256(_name) != keccak256(""));
-
+        require(!destinationAddrs[msg.sender].exists);
         //Allow update without error
         destinationAddrs[msg.sender] = User({
             exists: true,
@@ -87,7 +87,7 @@ contract Splitter is Ownable {
 
 
         numDestinationAddrs++;
-        emit        RegisterDestinationAddr(msg.sender, _name);
+        emit RegisterDestinationAddr(msg.sender, _name);
         return true;
     }
 
