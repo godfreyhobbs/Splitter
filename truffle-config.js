@@ -4,19 +4,13 @@ require('babel-register')({
 require('babel-polyfill');
 
 module.exports = {
+  // contracts_build_directory: "src/build",
   networks: {
     development: {
       host: 'localhost',
       port: 7545,
       gas: 6000000,
-      network_id: "*"
-    },
-    coverage: {
-      host: "localhost",
-      network_id: "*",
-      port: 8555,
-      gas: 0xfffffffffff,
-      gasPrice: 0x01
-    },
+      network_id: 5777
+    }
   }
 };

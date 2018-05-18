@@ -1,6 +1,8 @@
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 import './App.css';
 import getWeb3 from './utils/getWeb3'
+//TODO: move contract build folder
+import Splitter from './build/Splitter.json'
 
 class App extends Component {
   constructor(props) {
@@ -12,7 +14,7 @@ class App extends Component {
     }
   }
 
-  componentWillMount() {
+  componentDidMount() {
     // Get network provider and web3 instance.
     // See utils/getWeb3 for more info.
 
@@ -29,7 +31,8 @@ class App extends Component {
          console.log('Error finding web3.')
        })
   }
-  instantiateContract() {
+
+    instantiateContract() {
     /*
      * SMART CONTRACT EXAMPLE
      *
@@ -38,27 +41,41 @@ class App extends Component {
      */
 
     const contract = require('truffle-contract')
-    // const simpleStorage = contract(SimpleStorageContract)
-    // simpleStorage.setProvider(this.state.web3.currentProvider)
+    const splitter = contract(Splitter)
+    splitter.setProvider(this.state.web3.currentProvider)
 
     // Declaring this for later so we can chain functions on SimpleStorage.
-    var simpleStorageInstance
 
+    var splitterInstance
+
+    //
     this.state.web3.eth.getAccounts((error, accounts) => {
       this.state.web3.eth.getBalance(accounts[0],
-         function(error, result){
-           if(!error)
-             console.log(JSON.stringify(result));
+         function (error, result) {
+           if (!error) {
+             console.log(JSON.stringify(result))
+             this.setState({balance: result.toString()})
+             splitter.deployed().then((instance) => {
+               splitterInstance = instance
+               return splitterInstance.registerDestinationAddr('Carol', {from: accounts[1]});
+             }).then((result) => {
+                console.log(result)
+
+               // Get the value from the contract to prove it worked.
+               return splitterInstance.registerDestinationAddr('Bob', {from: accounts[2]})
+             }).then((result) => {
+               console.log(result)
+               return splitterInstance.send(this.state.web3.toWei(1, "ether"))
+             }).then((result) => {
+               console.log(result)
+             })
+
+           }
            else
              console.error(error);
-         })
-      //    (val)=>{
-      //   this.setState({ balance: val})
-      // })
-
-
+         }.bind(this)
+      )
     })
-
 
 
     // Get accounts.
@@ -80,14 +97,14 @@ class App extends Component {
 
   render() {
     return (
-      <div className="App">
-        <header className="App-header">
-          <h1 className="App-title">Welcome to React</h1>
-        </header>
-        <p className="App-intro">
-          To get started, edit <code>src/App.js</code> and save to reload.
-        </p>
-      </div>
+       <div className="App">
+         <header className="App-header">
+           <h1 className="App-title">Welcome to React</h1>
+         </header>
+         <p className="App-intro">
+           account balance is {this.state.balance}
+         </p>
+       </div>
     );
   }
 }
