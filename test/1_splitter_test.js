@@ -7,6 +7,7 @@ contract("Splitter", (accounts) => {
   let instance
   beforeEach("deploy a new Splitter contract", async () => {
     instance = await Splitter.new()
+
   })
 
   describe("constructor", () => {
@@ -19,27 +20,37 @@ contract("Splitter", (accounts) => {
          assert.equal(await instance.deposit(), 0)
          assert.equal(await instance.numDestinationAddrs(), 0)
          assert.equal(await instance.QUOTA(), 2)
+
+         var foo = await web3.eth.getBalance(instance.address)
+
        })
   })
-  describe("fallback functiondeposit", () => {
+  describe("fallback function deposit", () => {
     it("should fail if numDestinationAddrs is not 2",
        async () => {
          await expectThrow(
-            instance.send(web3.toWei(1, "ether"))
+            instance.sendTransaction({from: accounts[0], value: web3.toWei(1, "ether")})
+
          )
+
          const tx1 = await instance.registerDestinationAddr('Carol', {from: accounts[1]})
          await expectThrow(
-            instance.send(web3.toWei(1, "ether"))
+            instance.sendTransaction({from: accounts[0], value: web3.toWei(1, "ether")})
          )
          const tx2 = await instance.registerDestinationAddr('Bob', {from: accounts[2]})
 
-         const tx = await instance.send(web3.toWei(1, "ether"))
+         var contractBalance = await web3.eth.getBalance(instance.address)
+         assert.equal(contractBalance.toString(), 0)
+
+         const tx = await instance.sendTransaction({from: accounts[0], value: web3.toWei(1, "ether")})
 
          assert.equal(tx.logs[0].event, "Deposit")
          assert.equal(tx.logs[0].args.amount, web3.toWei(1, "ether"))
          assert.equal(tx.logs[0].args.deposit, web3.toWei(1, "ether"))
          assert.equal(tx.logs[0].args.from, accounts[0])
 
+         var contractBalance = await web3.eth.getBalance(instance.address)
+         assert.equal(contractBalance.toString(), web3.toWei(1, "ether").toString())
        })
     it("should allow increase",
 
@@ -47,13 +58,14 @@ contract("Splitter", (accounts) => {
          var tx = await instance.registerDestinationAddr('Carol', {from: accounts[1]})
          tx = await instance.registerDestinationAddr('Bob', {from: accounts[2]})
 
-         tx = await instance.send(web3.toWei(1, "ether"))
+         tx = await instance.sendTransaction({from: accounts[0], value: web3.toWei(1, "ether")})
          assert.equal(tx.logs[0].event, "Deposit")
          assert.equal(tx.logs[0].args.amount, web3.toWei(1, "ether"))
          assert.equal(tx.logs[0].args.deposit, web3.toWei(1, "ether"))
          assert.equal(tx.logs[0].args.from, accounts[0])
 
-         tx = await instance.send(web3.toWei(1, "ether"))
+         tx = await instance.sendTransaction({from: accounts[0], value: web3.toWei(1, "ether")})
+
          assert.equal(tx.logs[0].event, "Deposit")
          assert.equal(tx.logs[0].args.amount, web3.toWei(1, "ether"))
          assert.equal(tx.logs[0].args.deposit, web3.toWei(1 * 2.0, "ether") )
@@ -117,7 +129,7 @@ contract("Splitter", (accounts) => {
       const tx1 = await instance.registerDestinationAddr('Carol', {from: accounts[1]})
       const tx2 = await instance.registerDestinationAddr('Bob', {from: accounts[2]})
 
-      const tx = await instance.send(web3.toWei(1, "ether"))
+      const tx = await instance.sendTransaction({from: accounts[0], value: web3.toWei(1, "ether")})
 
       assert.equal(tx.logs[0].event, "Deposit")
       assert.equal(tx.logs[0].args.amount, web3.toWei(1, "ether"))
@@ -171,7 +183,7 @@ contract("Splitter", (accounts) => {
             instance.withdraw(1, {from: accounts[1]})
          )
          //deposit
-         await instance.send(web3.toWei(1, "ether"))
+         await instance.sendTransaction({from: accounts[0], value: web3.toWei(1, "ether")})
 
          //withdrawal
          tx = await instance.withdraw(web3.toWei(.5, "ether"), {from: accounts[1]})
@@ -224,7 +236,8 @@ contract("Splitter", (accounts) => {
     it("should allow odd amount withdrawal",
        async () => {
 
-         var tx = await instance.send(1)
+         var tx = await instance.sendTransaction({from: accounts[0], value: 1})
+
 
          assert.equal(tx.logs[0].event, "Deposit")
          assert.equal(tx.logs[0].args.amount, 1)
