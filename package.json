@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "react-scripts start",
-    "start:testrpc": "ganache-cli -p 7545  -i 5777 ",
+    "start:testrpc": "ganache-cli -p 7545  -i 5777 -m 'enforce slender game visual exhibit canoe hope leisure mouse rival win moon'",
     "migrate": "truffle migrate --reset",
     "test:truffle": "truffle test",
     "lint:sol": "solium -d .",

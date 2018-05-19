@@ -9,6 +9,9 @@ class App extends Component {
     super(props)
 
     this.state = {
+      deposit:0,
+      numDestinationAddrs: 0,
+      destinationAddrs: [],
       balance: 0,
       web3: null
     }
@@ -32,24 +35,28 @@ class App extends Component {
        })
   }
 
-    instantiateContract() {
+  instantiateContract() {
     /*
      * SMART CONTRACT EXAMPLE
      *
      * Normally these functions would be called in the context of a
      * state management library, but for convenience I've placed them here.
      */
-
     const contract = require('truffle-contract')
     const splitter = contract(Splitter)
     splitter.setProvider(this.state.web3.currentProvider)
 
     // Declaring this for later so we can chain functions on SimpleStorage.
-
+    this.state.web3.version.getNetwork(console.log)
+    
     var splitterInstance
 
+    const carolAddr = '0x05d89562a2b978B06Ba91c1BE137B32BF7CA3310';
+    const bobAddr = '0x896838b0fdf2Edd193dF1AE4C5569D9503Ed118A';
     //
     this.state.web3.eth.getAccounts((error, accounts) => {
+
+
       this.state.web3.eth.getBalance(accounts[0],
          function (error, result) {
            if (!error) {
@@ -57,16 +64,32 @@ class App extends Component {
              this.setState({balance: result.toString()})
              splitter.deployed().then((instance) => {
                splitterInstance = instance
-               return splitterInstance.registerDestinationAddr('Carol', {from: accounts[1]});
+
+               return splitterInstance.numDestinationAddrs();
+             }).then((result) => {
+               console.log(result)
+               this.setState({numDestinationAddrs :result.toString()});
+
+               return splitterInstance.destinationAddrs(carolAddr);
+             }).then((result) => {
+
+               if(!result[0]) {
+                 return splitterInstance.registerDestinationAddr('Carol', {from: carolAddr});
+               } else {
+                 return splitterInstance.registerDestinationAddr('Bob', {from: bobAddr});
+               }
+
+
+
              }).then((result) => {
                 console.log(result)
 
                // Get the value from the contract to prove it worked.
-               return splitterInstance.registerDestinationAddr('Bob', {from: accounts[2]})
-             }).then((result) => {
-               console.log(result)
-               return splitterInstance.send(this.state.web3.toWei(1, "ether"))
-             }).then((result) => {
+             //   return splitterInstance.registerDestinationAddr('Bob', {from: '0x5d72eabd566f050294262cf0fee30ee08ec8b00f'})
+             // }).then((result) => {
+             //   console.log(result)
+             //   return splitterInstance.send(this.state.web3.toWei(1, "ether"))
+             // }).then((result) => {
                console.log(result)
              })
 
@@ -96,13 +119,22 @@ class App extends Component {
   }
 
   render() {
+
+    const listAddrs = this.state.destinationAddrs.map((item) =>
+       <li>{item}</li>
+    );
+
     return (
        <div className="App">
          <header className="App-header">
-           <h1 className="App-title">Welcome to React</h1>
+           <h1 className="App-title">Welcome to Slitter</h1>
          </header>
          <p className="App-intro">
-           account balance is {this.state.balance}
+           Splitter:
+           <ul>{listAddrs}</ul>,
+           <div>numDestinationAddrs is {this.state.numDestinationAddrs}</div>
+           <div>destinationAddrs 1 : {this.state.destinationAddrs[0]}</div>
+           <div>account balance is {this.state.balance}</div>
          </p>
        </div>
     );
