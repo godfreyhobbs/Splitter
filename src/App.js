@@ -60,13 +60,13 @@ class App extends Component {
     const bobAddr = "0x896838b0fdf2Edd193dF1AE4C5569D9503Ed118A";
     //
     this.state.web3.eth.getAccounts((error, accounts) => {
-      this.updateAddrsBalances(accounts);
+
 
       splitter
         .deployed()
         .then(instance => {
           splitterInstance = instance;
-
+          this.updateAddrsBalances(accounts.concat( carolAddr, bobAddr, instance.address));
           return splitterInstance.numDestinationAddrs();
         })
         .then(result => {
@@ -102,7 +102,7 @@ class App extends Component {
   }
 
   updateAddrsBalances = async accounts => {
-    await _.forEach([accounts[0], bobAddr, carolAddr], async addr => {
+    await _.forEach(accounts, async addr => {
       this.state.web3.eth.getBalance(addr, (err, bal) => {
         let newBalances = this.state.balances;
         newBalances[addr] = bal.toString();
