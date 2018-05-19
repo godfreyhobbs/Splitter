@@ -18,7 +18,10 @@ class App extends Component {
       numDestinationAddrs: 0,
       destinationAddrs: [],
       balances: {},
-      web3: null
+      web3: null,
+      splitterInstance: null,
+      accounts: [],
+      newDepositVal: ""
     };
   }
 
@@ -60,34 +63,39 @@ class App extends Component {
     const bobAddr = "0x896838b0fdf2Edd193dF1AE4C5569D9503Ed118A";
     //
     this.state.web3.eth.getAccounts((error, accounts) => {
-
-
       splitter
         .deployed()
         .then(instance => {
           splitterInstance = instance;
-          this.updateAddrsBalances(accounts.concat( carolAddr, bobAddr, instance.address));
+          this.setState({
+            splitterInstance,
+            accounts
+          });
+
+          this.updateAddrsBalances(
+            accounts.concat(carolAddr, bobAddr, instance.address)
+          );
+
           return splitterInstance.numDestinationAddrs();
         })
         .then(result => {
           console.log(result);
           this.setState({ numDestinationAddrs: result.toString() });
-
           return splitterInstance.destinationAddrs(carolAddr);
         })
         .then(result => {
           //TODO: massive clean up of this init code
-          if (!result[0]) {
-            return splitterInstance.registerDestinationAddr("Carol", {
-              from: carolAddr
-            });
-          } else {
-            return splitterInstance.registerDestinationAddr("Bob", {
-              from: bobAddr
-            });
-          }
-        })
-        .then(result => {
+          //   if (!result[0]) {
+          //     return splitterInstance.registerDestinationAddr("Carol", {
+          //       from: carolAddr
+          //     });
+          //   } else {
+          //     return splitterInstance.registerDestinationAddr("Bob", {
+          //       from: bobAddr
+          //     });
+          //   }
+          // })
+          // .then(result => {
           console.log(result);
 
           // Get the value from the contract to prove it worked.
@@ -111,6 +119,20 @@ class App extends Component {
     });
   };
 
+  handleClick = () => {
+    console.log("this is:", this);
+    this.state.splitterInstance
+      .sendTransaction({
+        from: this.state.accounts[0],
+        value: this.state.web3.toWei(this.state.newDepositVal, "ether")
+      })
+      .then(console.log);
+  };
+
+  depositHandleChange = event => {
+    this.setState({ newDepositVal: event.target.value });
+  };
+
   render() {
     const listAddrs = _.map(this.state.balances, (val, key) => (
       <li key={key}>{key} : {val} </li>
@@ -126,6 +148,15 @@ class App extends Component {
           <ul>{listAddrs}</ul>
           <div>numDestinationAddrs is {this.state.numDestinationAddrs}</div>
           {/*<div>destinationAddrs 1 : {this.state.destinationAddrs[0]}</div>*/}
+          <form onSubmit={this.handleClick}>
+            <input
+              type="text"
+              value={this.state.newDepositVal}
+              onChange={this.depositHandleChange}
+            />
+            <input type="submit" value="Submit" />
+          </form>
+
         </div>
       </div>
     );
