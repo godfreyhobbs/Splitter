@@ -26,10 +26,11 @@
     "truffle": "^4.1.8"
   },
   "dependencies": {
-    "zeppelin-solidity": "^1.9.0",
+    "lodash": "^4.17.10",
     "react": "^16.3.2",
     "react-dom": "^16.3.2",
     "react-scripts": "1.1.4",
-    "truffle-contract": "^3.0.5"
+    "truffle-contract": "^3.0.5",
+    "zeppelin-solidity": "^1.9.0"
   }
 }
